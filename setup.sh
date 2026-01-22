@@ -19,6 +19,20 @@ fi
 read -p "Project description (one line): " PROJECT_DESC
 PROJECT_DESC=${PROJECT_DESC:-"Project description"}
 
+# Get GitHub username
+echo ""
+echo "Detecting GitHub username..."
+GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "")
+if [ -z "$GH_USER" ]; then
+  read -p "GitHub username: " GH_USER
+fi
+echo "GitHub user: $GH_USER"
+
+# Get repository name
+read -p "Repository name (default: $PROJECT_NAME): " REPO_NAME
+REPO_NAME=${REPO_NAME:-$PROJECT_NAME}
+REPOSITORY="$GH_USER/$REPO_NAME"
+
 # Get GitHub Project number
 echo ""
 echo "Fetching your GitHub Projects..."
@@ -32,15 +46,38 @@ echo "Updating CLAUDE.md..."
 sed -i "s/{PROJECT_NAME}/$PROJECT_NAME/g" CLAUDE.md
 sed -i "s/{One-line project description}/$PROJECT_DESC/g" CLAUDE.md
 
-# Replace PROJECT_NUMBER if provided
+# Create project.json if project number provided
 if [ -n "$PROJECT_NUMBER" ]; then
-  echo "Updating GitHub Project number..."
-  sed -i "s/{PROJECT_NUMBER}/$PROJECT_NUMBER/g" .claude/settings.local.json
-  sed -i "s/{PROJECT_NUMBER}/$PROJECT_NUMBER/g" .claude/skills/development-flow/SKILL.md
-  sed -i "s/{PROJECT_NUMBER}/$PROJECT_NUMBER/g" .claude/skills/development-flow/references/task-init-flow.md
+  echo "Creating .claude/project.json..."
+
+  # Get project details
+  PROJECT_INFO=$(gh project view $PROJECT_NUMBER --owner @me --format json 2>/dev/null || echo "{}")
+  PROJECT_ID=$(echo "$PROJECT_INFO" | jq -r '.id // ""')
+  PROJECT_URL=$(echo "$PROJECT_INFO" | jq -r '.url // ""')
+
+  # Create project.json
+  cat > .claude/project.json << EOF
+{
+  "github": {
+    "project": {
+      "number": $PROJECT_NUMBER,
+      "id": "$PROJECT_ID",
+      "url": "$PROJECT_URL",
+      "owner": "@me"
+    },
+    "repository": "$REPOSITORY"
+  }
+}
+EOF
+
+  echo "GitHub Project configured: #$PROJECT_NUMBER"
 else
-  echo "Skipping GitHub Project number (can be set later)"
+  echo "Skipping GitHub Project configuration (can be set later)"
+  echo "To configure later, create .claude/project.json manually"
 fi
+
+# Remove template file
+rm -f .claude/project.json.template
 
 # Clean up template files
 echo ""
@@ -52,9 +89,12 @@ rm -f setup.sh
 echo ""
 echo "=== Setup Complete ==="
 echo ""
-echo "Remaining placeholders to configure manually:"
-echo "  - {test_command}  : e.g., 'pnpm test', 'npm test'"
-echo "  - {lint_command}  : e.g., 'pnpm lint', 'npm run lint'"
+echo "Next steps:"
+echo "  1. git init && git add . && git commit -m 'Initial commit'"
+echo "  2. gh repo create $REPO_NAME --private --source=. --push"
 if [ -z "$PROJECT_NUMBER" ]; then
-  echo "  - {PROJECT_NUMBER}: Run 'gh project list --owner @me' to find it"
+  echo "  3. Create GitHub Project: gh project create --owner @me --title '$PROJECT_NAME'"
+  echo "  4. Create .claude/project.json with project details"
 fi
+echo ""
+echo "Then start working: 'let's start working' or '/development-flow'"
