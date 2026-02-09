@@ -2,37 +2,69 @@
 
 {One-line project description}
 
+## Skills (Required Reading)
+
+**Before starting any work, read the relevant skill:**
+
+| When | Skill | Path |
+|------|-------|------|
+| Starting a task / GitHub sync | `development-flow` | `.claude/skills/development-flow/SKILL.md` |
+| Working on issues/PRs | `project-management` | `.claude/skills/project-management/SKILL.md` |
+| Creating new skills | `skill-creator` | `.claude/skills/skill-creator/SKILL.md` |
+
+### Skill Triggers
+
+- **"let's start working"** → Read `development-flow`, sync GitHub issues
+- **Creating/updating issues** → Read `project-management`
+- **Creating new skills** → Read `skill-creator`
+
 ## Project Configuration
 
 GitHub Project settings are stored in `.claude/project.json`.
 
 ```bash
-# Read project config
 cat .claude/project.json
 ```
 
-## Task Management
+## Workflow
 
-**IMPORTANT:** Always use `development-flow` skill when starting work sessions.
+### 1. Start Session
+```
+1. Read this CLAUDE.md
+2. Check GitHub issues: gh issue list -R {REPOSITORY}
+3. Pick an issue from current milestone
+4. Read relevant skills for the task
+5. Start working
+```
 
-### Workflow
+### 2. During Development
+```
+1. Write tests first (TDD)
+2. Implement feature
+3. Run tests
+4. Commit with conventional commits
+```
 
-1. Run `/development-flow` or say "let's start working"
-2. Fetch tasks from GitHub Project
-3. Create session todos from project items
-4. Sync completed tasks back to GitHub
+### 3. Complete Task
+```
+1. Push changes
+2. Close issue: gh issue close <number>
+3. Notify via Telegram (see Notifications)
+```
 
-### Quick Commands
+## Quick Commands
 
 ```bash
-# Fetch tasks from GitHub Project (read PROJECT_NUMBER from .claude/project.json)
-gh project item-list {PROJECT_NUMBER} --owner @me
+# Development (customize these for your project)
+npm install         # Install dependencies
+npm run dev         # Development mode
+npm run build       # Build for production
+npm test            # Run tests
 
-# Create new issue
-gh issue create --title "Title" --repo {REPOSITORY}
-
-# Close completed issue
-gh issue close <number> --repo {REPOSITORY}
+# GitHub
+gh issue list -R {REPOSITORY}
+gh issue create --title "Title" -R {REPOSITORY}
+gh issue close <number> -R {REPOSITORY}
 ```
 
 ## Tech Stack
@@ -44,25 +76,34 @@ gh issue close <number> --repo {REPOSITORY}
 | Language  | -          |
 | Test      | -          |
 
-## Commands
+## Milestones
 
-```bash
-# dev        - Start development server
-# test       - Run tests
-# build      - Build for production
-# lint       - Run linter
+| Version | Focus | Key Issues |
+|---------|-------|------------|
+| v0.1 | Initial Setup | Setup, Core features |
+| v0.2 | - | - |
+| v0.3 | - | - |
+| v1.0 | Production | Release |
+
+## Notifications
+
+Report to Juhyeon via Telegram ({TELEGRAM_USER_ID}):
+
 ```
-
-## Skills Reference
-
-| Skill                | Description                                |
-| -------------------- | ------------------------------------------ |
-| `development-flow`   | **GitHub Project sync and task workflow**  |
-| `skill-authoring`    | Skills writing and editing guide           |
-| `project-management` | GitHub Project, issues, PR workflow        |
+📝 Starting #N: {title}
+✅ Completed #N: {title}
+❓ Question: {question}
+```
 
 ## Core Rules
 
-- **English only**: All comments, documentation, and commit messages in English
-- **GitHub Project sync**: Always sync session todos with GitHub Project
-- **Config first**: Read `.claude/project.json` before GitHub operations
+1. **English only** - All comments, docs, and commits in English
+2. **Test-first** - Write tests before implementation (TDD)
+3. **GitHub sync** - Always sync session todos with GitHub
+4. **Config first** - Read `.claude/project.json` before GitHub operations
+5. **Read skills** - Always check relevant skill before major work
+
+## References
+
+- GitHub: https://github.com/{REPOSITORY}
+- Issues: `gh issue list -R {REPOSITORY}`
